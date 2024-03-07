@@ -1,0 +1,24 @@
+<html>
+    <head>
+        <title>Flask App</title>
+    </head>
+    <body>
+        <h1>Hello World !!!!</h1>
+        <p>This is a Flask App</p>
+        <p>My name is {{ fisrt_name }}</p>
+        <h1>{{ stuff | safe }}</h1>
+        <!-- JINJA TAGS and filters that we are using  --> 
+        <!-- this is jinja for loop in python that we are implementing -->
+        <!-- for loop in jinja tag are put into the {% for pizza in favorite_pizza %} {% endfor %} this type of bracket is just used for the logics and all-->
+        <!-- {{ fisrt_name }} this type of bracket is used for the data variabes -->
+       
+        <ul>
+            {% for pizza in favorite_pizza %}
+                <li>{{ pizza }}</li>
+            {% endfor %}
+        </ul>
+
+        <h1> {{favorite_pizza.0}}</h1>
+        <h1> {{favorite_pizza.0 | reverse }}</h1>
+    </body>
+</html>
