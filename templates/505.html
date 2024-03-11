@@ -1,13 +1,15 @@
+{% extends 'base.html' %}
 
-<html>
-    <head>
-        <title>Flask App</title>
-    </head>
-    <body>
-        <h1>505 Error</h1>
-        <h2> Internal Server Error and try again</h2>
-        <p>This is a Flask App</p>
-        <p> something went wrong try again</p>
-    </body>
-
-</html>
+{% block content %}
+    <html>
+        <head>
+            <title>Flask App</title>
+        </head>
+        <body>
+            <h1>500 Error</h1>
+            <h2>Internal Server Error and try again</h2>
+            <p>This is a Flask App</p>
+            <p>Something went wrong, try again</p>
+        </body>
+    </html>
+{% endblock %}

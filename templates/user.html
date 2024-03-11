@@ -1,9 +1,14 @@
-<html>  
-    <head>
-        <title>Flask App</title>
-    </head>
-    <body>
-        <h1>Hello {{ user_name | upper | replace(' ','_') }} !!!</h1>
-        <p>This is a Flask App</p>
-    </body>
-</html>
+{% extends 'base.html' %}
+
+{% block content %}
+    <html>  
+        <head>
+            <title>Flask App</title>
+        </head>
+        <body>
+            <h1>Hello {{ user_name | upper | replace(' ','_') }} !!!</h1>
+            <p>This is a Flask App</p>
+        </body>
+    </html>
+{% endblock %}
+
