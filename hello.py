@@ -140,6 +140,32 @@ def delete(id):
         return render_template('add_user.html', form=form, name=name, our_users=our_users,id = id)
 
 
+class PasswordForm(FlaskForm):
+    email = StringField("What is your email?", validators=[DataRequired()])
+    password_hash = PasswordField("What is your password?", validators=[DataRequired()])
+    submit = SubmitField("Submit")
+
+# create the passward test Page 
+@app.route('/test_pw', methods=['GET', 'POST'])
+def test_pw():
+    email = None
+    password = None
+    pw_to_check = None
+    passed = None
+    form = PasswordForm()
+    # validate the form
+    if form.validate_on_submit():
+        email = form.email.data
+        password = form.password_hash.data
+        form.email.data = ''
+        form.password_hash.data = ''
+        # lookup user by email address
+        pw_to_check = Users.query.filter_by(email=email).first()
+        # check hashed password
+        if pw_to_check is not None:
+            passed = check_password_hash(pw_to_check.password_hash, password)
+    return render_template('test_pw.html', email=email, password=password, pw_to_check=pw_to_check, passed = passed ,form=form)
+
 # try to vreate the db connectivity ib the database MYSQL 
 
 
