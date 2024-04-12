@@ -7,13 +7,13 @@
       <div class="collapse navbar-collapse" id="navbarSupportedContent">
         <ul class="navbar-nav me-auto mb-2 mb-lg-0">
           <li class="nav-item">
-            <a class="nav-link active" aria-current="page" href="#">Home</a>
+            <a class="nav-link active" aria-current="page" href="{{url_for('index') }}">Home</a>
           </li>
           <li class="nav-item">
             <!-- use of the link in flask we use URL for tag 1. the first argument is the name od the route that we define in the hello.py and the second argument is the name of the profile that is the argument of what user function is taking -->
             <a class="nav-link" href="{{url_for('user',name='John') }}">User Profile</a>
           </li>
-          <li class="nav-item dropdown">
+          <!-- <li class="nav-item dropdown">
             <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
               Dropdown
             </a>
@@ -23,7 +23,7 @@
               <li><hr class="dropdown-divider"></li>
               <li><a class="dropdown-item" href="#">Something else here</a></li>
             </ul>
-          </li>
+          </li> -->
           <!-- <li class="nav-item">
             <a class="nav-link disabled" aria-disabled="true">Disabled</a>
           </li> -->
@@ -31,10 +31,7 @@
             <!-- use of the link in flask we use URL for tag 1. the first argument is the name od the route that we define in the hello.py and the second argument is the name of the profile that is the argument of what user function is taking -->
             <a class="nav-link" href="{{url_for('name') }}">Enter Name</a>
           </li>
-          <li class="nav-item">
-            <!-- use of the link in flask we use URL for tag 1. the first argument is the name od the route that we define in the hello.py and the second argument is the name of the profile that is the argument of what user function is taking -->
-            <a class="nav-link" href="{{url_for('add_user') }}">add User</a>
-          </li>
+  
           <li class="nav-item">
             <!-- use of the link in flask we use URL for tag 1. the first argument is the name od the route that we define in the hello.py and the second argument is the name of the profile that is the argument of what user function is taking -->
             <a class="nav-link" href="{{url_for('add_post') }}">add Blog Post</a>
@@ -43,11 +40,26 @@
             <!-- use of the link in flask we use URL for tag 1. the first argument is the name od the route that we define in the hello.py and the second argument is the name of the profile that is the argument of what user function is taking -->
             <a class="nav-link" href="{{url_for('posts') }}">Post</a>
           </li>
-
+          
+          {% if current_user.is_authenticated %}
+          <li class="nav-item">
+            <!-- use of the link in flask we use URL for tag 1. the first argument is the name od the route that we define in the hello.py and the second argument is the name of the profile that is the argument of what user function is taking -->
+            <a class="nav-link" href="{{url_for('dashboard') }}">dashboard </a>
+          </li>
+          <li class="nav-item">
+            <!-- use of the link in flask we use URL for tag 1. the first argument is the name od the route that we define in the hello.py and the second argument is the name of the profile that is the argument of what user function is taking -->
+            <a class="nav-link" href="{{url_for('logout') }}">Log out </a>
+          </li>
+          {% else %}
+          <li class="nav-item">
+            <!-- use of the link in flask we use URL for tag 1. the first argument is the name od the route that we define in the hello.py and the second argument is the name of the profile that is the argument of what user function is taking -->
+            <a class="nav-link" href="{{url_for('add_user') }}">Register</a>
+          </li>
           <li class="nav-item">
             <!-- use of the link in flask we use URL for tag 1. the first argument is the name od the route that we define in the hello.py and the second argument is the name of the profile that is the argument of what user function is taking -->
             <a class="nav-link" href="{{url_for('login') }}">Log in </a>
           </li>
+          {% endif %}
         </ul>
         <form class="d-flex" role="search">
           <input class="form-control me-2" type="search" placeholder="Search" aria-label="Search">

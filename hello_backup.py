@@ -8,8 +8,6 @@ from datetime import datetime
 from werkzeug.security import generate_password_hash, check_password_hash
 from wtforms.widgets import TextArea
 from flask_login import UserMixin, login_user, LoginManager, login_required, logout_user, current_user
-from webforms import LoginForm, PostForm, UserForm, PasswordForm
-
 
 # created the flask app instance. this helps find all the files and directories. this also helps to run the app or the flask project 
 
@@ -40,7 +38,11 @@ login_manager.login_view = 'login'
 def load_user(user_id):
     return Users.query.get(int(user_id))
 
-
+# create a log in Form
+class LoginForm(FlaskForm):
+    username = StringField('Username', validators=[DataRequired()])
+    password = PasswordField('Password', validators=[DataRequired()])
+    submit = SubmitField('submit')
 
 # create a log in page 
 @app.route('/login', methods=['GET', 'POST'])
@@ -124,7 +126,13 @@ def delete(id):
         posts = Posts.query.order_by(Posts.date_posted).all()
         return render_template('posts.html', posts=posts)
 
-
+# Craete a Post form  
+class PostForm(FlaskForm):
+    title = StringField('Title', validators=[DataRequired()], widget=TextArea())
+    content = StringField('Content', validators=[DataRequired()])
+    author = StringField('Author', validators=[DataRequired()])
+    slug = StringField('Slug', validators=[DataRequired()])
+    submit = SubmitField('Submit')
 
 # ceate a blog page 
 @app.route('/posts')
@@ -225,7 +233,17 @@ with app.app_context():
     # Inside the application context
     db.create_all()
     
+#  create a form which will take all the input from the user and save it in the database
+    # vakidor checks weather the field is empty or not if the field is empty then it will not save the data in the database.
+class UserForm(FlaskForm):
 
+    name = StringField("Name", validators=[DataRequired()])
+    username = StringField("Username", validators=[DataRequired()])
+    email = StringField("Email", validators=[DataRequired()])
+    favorite_color = StringField("Favorite Color")
+    password_hash = PasswordField("Password", validators=[DataRequired(), EqualTo("password_hash2", message="Passwords Must Match")])
+    password_hash2 = PasswordField("Confirm Password", validators=[DataRequired()])
+    submit = SubmitField("Submit")
 
 
 # create the route for the form
@@ -268,7 +286,6 @@ def add_user():
 # It then tries to commit the changes to the database. If the commit is successful, it flashes a success message and renders 
 # the "update.html" template again. If there is an error during the commit, it flashes an error message and also renders the "update.html" template.
 @app.route('/update/<int:id>', methods=['GET', 'POST'])
-@login_required
 def update(id):
     form = UserForm()
     #  the below will find the id of the user that we want to update quering on the user table ( which is actually act as a model)and then update the name and email into the database
@@ -309,6 +326,10 @@ def delete(id):
         return render_template('add_user.html', form=form, name=name, our_users=our_users,id = id)
 
 
+class PasswordForm(FlaskForm):
+    email = StringField("What is your email?", validators=[DataRequired()])
+    password_hash = PasswordField("What is your password?", validators=[DataRequired()])
+    submit = SubmitField("Submit")
 
 # create the passward test Page 
 @app.route('/test_pw', methods=['GET', 'POST'])

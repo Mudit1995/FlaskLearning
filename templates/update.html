@@ -13,21 +13,13 @@
 
 
 
-{% if name %} 
-      <h1> update user</h1> 
-      <br/>
-      
-      <ul>
-        {% for our_user in our_users %}
-            <li>{{our_user.id}} - {{ our_user.name }} - {{ our_user.email }} - {{ our_user.favorite_color }}</li>
-        {% endfor %}
-    </ul>
-    
-
-
-{% else %} 
+{% if id == current_user.id %}
     <!-- this is jinja if else to display the form and every user who is getting added in the database will be diplayed. -->
       <h1> update User..... </h1>   
+
+      Id to update : {{id}}
+      current ID : {{current_user.id}}
+
 
       <br/>
 
@@ -36,6 +28,12 @@
         {{ form.name.label(class="form-label") }}
         <!-- if the form we need to give the value than we need to use the value attribute for that form -->
         {{ form.name(class="form-control", value=name_to_update.name) }}
+
+        <br/>
+        {{ form.username.label(class="form-label") }}
+        {{ form.username(class="form-control", value=name_to_update.username) }}
+        <br/>  
+
          <br/>
          {{ form.email.label(class="form-label") }}
          {{ form.email(class="form-control", value=name_to_update.email) }}
@@ -53,16 +51,15 @@
     <br/>
     <br/>
     <br/>
-<!-- 
-    <table class="table">
-      
-        {% for our_user in our_users %}
-        <tr>
-            <td>{{our_user.id}} - {{ our_user.name }} - {{ our_user.email }}</td>
-          </tr> 
-        {% endfor %}
-      
-    </table> -->
-{% endif %} 
+{% else %}
+
+<div class="alert alert-success alert-dismissible fade show" role="alert">
+  <h6>Hey  </h6> You are not authorized to update this user.
+ <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+</div>
+<br/>
+
+{% endif %}
+
 
 {% endblock %}

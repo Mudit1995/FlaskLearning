@@ -11,6 +11,7 @@
 <br/>
 {% endfor %}
 
+{% if current_user.is_authenticated %}
 <h1> Add Blog Post ....  </h1>   
  
 <br/>
@@ -40,7 +41,17 @@
 <br/>
 <br/>
 
-<table class="table">
+</div>
+
+{% else %}
+
+  <h2> Please Login </h2>
+  <p> You need to be logged in to add blog posts</p>
+  <br/>
+  <a href = " {{url_for('login')}}" class = "btn btn-outline-secondary btn-sm"> Login</a>
+
+{% endif %}
+<!-- <table class="table">
 
   {% for our_user in our_users %}
   <tr>
@@ -53,7 +64,7 @@
     </tr> 
   {% endfor %}
 
-</table>
+</table> -->
 
 
 
