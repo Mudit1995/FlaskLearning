@@ -101,26 +101,37 @@ class Posts(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     title = db.Column(db.String(255))
     content = db.Column(db.Text)
-    author = db.Column(db.String(255))
+    # author = db.Column(db.String(255))
     date_posted = db.Column(db.DateTime, default=datetime.utcnow)
     slug = db.Column(db.String(255))
 
+    # creating the foreign key which will reference the primary key for the user table
+    # over here the users is referencing to the database users table not the class Users that is why it is in short hands as db.ForeignKey('users.id') 
+    poster_id = db.Column(db.Integer, db.ForeignKey('users.id'))
+
 # route to the delere the post 
 @app.route('/posts/delete/<int:id>',endpoint='delete_post')
+@login_required
 def delete(id):
     post_to_delete = Posts.query.get_or_404(id)
-    try:
-        db.session.delete(post_to_delete)
-        db.session.commit()
-        # Return a message 
-        flash('Post was deleted')
+    id = current_user.id
+    if id == post_to_delete.poster_id:
+        try:
+            db.session.delete(post_to_delete)
+            db.session.commit()
+            # Return a message 
+            flash('Post was deleted')
 
-        # grab all the posts from the database
-        posts = Posts.query.order_by(Posts.date_posted).all()
-        return render_template('posts.html', posts=posts)
-    except:
-        # Return an error message
-        flash('There was an issue deleting that post')
+            # grab all the posts from the database
+            posts = Posts.query.order_by(Posts.date_posted).all()
+            return render_template('posts.html', posts=posts)
+        except:
+            # Return an error message
+            flash('There was an issue deleting that post')
+            posts = Posts.query.order_by(Posts.date_posted).all()
+            return render_template('posts.html', posts=posts)
+    else:
+        flash('You are not authorized to delete that post')
         posts = Posts.query.order_by(Posts.date_posted).all()
         return render_template('posts.html', posts=posts)
 
@@ -142,12 +153,15 @@ def post(id):
 @app.route('/posts/edit/<int:id>', methods=['GET', 'POST'])
 @login_required
 def edit_post(id):
+    # the logic is we are taking the post from the database and displaying it in the form and that post has the id associated 
+    # with it which can be only accesed by the user who created it using the poster id
+    # and the post refence as the poster and if the potser user id is equal to the current user id then we can edit the post
     post = Posts.query.get_or_404(id)
     form = PostForm()
     
     if form.validate_on_submit():
         post.title = form.title.data
-        post.author = form.author.data
+        # post.author = form.author.data
         post.content = form.content.data
         post.slug = form.slug.data
         # update the database
@@ -156,12 +170,17 @@ def edit_post(id):
         flash('Post has been updated')
         return redirect(url_for('post', id=post.id))
 
-    # this is for when we edit the post which is already in the database therefore when this page loads it will show the data that is already in the database
-    form.title.data = post.title
-    form.author.data = post.author
-    form.content.data = post.content
-    form.slug.data = post.slug
-    return render_template('edit_post.html', form=form)
+    if current_user.id == post.poster_id:
+        # this is for when we edit the post which is already in the database therefore when this page loads it will show the data that is already in the database
+        form.title.data = post.title
+        # form.author.data = post.author
+        form.content.data = post.content
+        form.slug.data = post.slug
+        return render_template('edit_post.html', form=form)
+    else:
+        flash('You are not authorized to edit this post')
+        posts = Posts.query.order_by(Posts.date_posted).all()
+        return render_template('posts.html', posts=posts)
 
 
 # Add a post Page
@@ -171,16 +190,17 @@ def add_post():
     form = PostForm()
 
     if form.validate_on_submit():
+        poster = current_user.id
         post = Posts(
             title=form.title.data,
             content=form.content.data,
-            author=form.author.data,
+            poster_id=poster,
             slug=form.slug.data
         )
         # Clear the form and redirect to that page 
         form.title.data = ''
         form.content.data = ''
-        form.author.data = ''
+        # form.author.data = ''
         form.slug.data = ''
 
         # Add post data to database
@@ -203,6 +223,11 @@ class Users(db.Model, UserMixin):
     email = db.Column(db.String(120), nullable=False, unique=True)
     favorite_color = db.Column(db.String(120))
     password_hash = db.Column(db.String(128), nullable=False)
+
+    # users can have many posts 
+    #  over ehere the Posts is refernecing the Posts model class not the name of the table in the database
+    posts = db.relationship('Posts', backref='poster', lazy=True)
+
     @property
     def password(self):
         raise AttributeError('password is not a readable attribute')
@@ -267,6 +292,7 @@ def add_user():
 # In the POST request, it updates the name and email fields of the user object with the values submitted in the form. 
 # It then tries to commit the changes to the database. If the commit is successful, it flashes a success message and renders 
 # the "update.html" template again. If there is an error during the commit, it flashes an error message and also renders the "update.html" template.
+
 @app.route('/update/<int:id>', methods=['GET', 'POST'])
 @login_required
 def update(id):
