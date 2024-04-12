@@ -7,7 +7,7 @@ from flask_migrate import Migrate
 from datetime import datetime
 from werkzeug.security import generate_password_hash, check_password_hash
 from wtforms.widgets import TextArea
-
+from flask_login import UserMixin, login_user, LoginManager, login_required, logout_user, current_user
 
 # created the flask app instance. this helps find all the files and directories. this also helps to run the app or the flask project 
 
@@ -28,7 +28,55 @@ db = SQLAlchemy(app)
 # then we have created the user form and now we will craete the route to that form. 
 migrate = Migrate(app, db) 
 
+# flask log in stuff 
 
+login_manager = LoginManager()
+login_manager.init_app(app)
+login_manager.login_view = 'login'
+
+@login_manager.user_loader
+def load_user(user_id):
+    return Users.query.get(int(user_id))
+
+# create a log in Form
+class LoginForm(FlaskForm):
+    username = StringField('Username', validators=[DataRequired()])
+    password = PasswordField('Password', validators=[DataRequired()])
+    submit = SubmitField('submit')
+
+# create a log in page 
+@app.route('/login', methods=['GET', 'POST'])
+def login():
+    form = LoginForm()
+    if form.validate_on_submit():
+        user = Users.query.filter_by(username=form.username.data).first()
+        if user:
+            # check the hash
+            #  user.password_hash this is present in the database and will check the password against it 
+            if check_password_hash(user.password_hash, form.password.data):
+                login_user(user)
+                flash("Login Successful!!")
+                return redirect(url_for('dashboard'))
+            else:
+                flash("Wrong Password - Try Again")
+        else:
+            flash("User Does Not Exist")
+
+    return render_template('login.html', form=form)
+
+# log out page 
+@app.route('/logout', methods=['GET', 'POST'])
+@login_required
+def logout():
+    logout_user()
+    flash("You have been logged out")
+    return redirect(url_for('login'))
+
+# create rthe dashboard page
+@app.route('/dashboard', methods=['GET', 'POST'])
+@login_required
+def dashboard():   
+    return render_template('dashboard.html')
 
 # create a blog post model 
 class Posts(db.Model):
@@ -134,8 +182,9 @@ def add_post():
 
 
 
-class Users(db.Model):
+class Users(db.Model, UserMixin):
     id = db.Column(db.Integer, primary_key=True)
+    username = db.Column(db.String(20), nullable=False, unique=True)
     name = db.Column(db.String(200), nullable=False)
     email = db.Column(db.String(120), nullable=False, unique=True)
     favorite_color = db.Column(db.String(120))
@@ -167,6 +216,7 @@ with app.app_context():
 class UserForm(FlaskForm):
 
     name = StringField("Name", validators=[DataRequired()])
+    username = StringField("Username", validators=[DataRequired()])
     email = StringField("Email", validators=[DataRequired()])
     favorite_color = StringField("Favorite Color")
     password_hash = PasswordField("Password", validators=[DataRequired(), EqualTo("password_hash2", message="Passwords Must Match")])
@@ -187,13 +237,14 @@ def add_user():
             # hashed_pw = generate_password_hash(form.password_hash.data, "sha256")
             hashed_pw = generate_password_hash(form.password_hash.data, "pbkdf2:sha256")
 
-            user = Users(name=form.name.data, email=form.email.data,favorite_color=form.favorite_color.data, password_hash=hashed_pw)
+            user = Users(name=form.name.data, username = form.username.data ,email=form.email.data,favorite_color=form.favorite_color.data, password_hash=hashed_pw)
             db.session.add(user)
             db.session.commit()
 
         name = form.name.data
         # after adding the data we need to clear the form.
         form.name.data = ''
+        form.username.data = ''
         form.email.data = ''
         form.favorite_color.data = ''
         form.password_hash.data = ''
@@ -219,6 +270,7 @@ def update(id):
     name_to_update = Users.query.get_or_404(id)
     if request.method == "POST":
         name_to_update.name = request.form['name']
+        # name_to_update.username = request.form['username']
         name_to_update.email = request.form['email']
         name_to_update.favorite_color = request.form['favorite_color']
         try:
