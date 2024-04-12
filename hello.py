@@ -1,4 +1,4 @@
-from flask import Flask, render_template, flash, request
+from flask import Flask, render_template, flash, request, redirect, url_for
 from flask_wtf import FlaskForm
 from wtforms import StringField, SubmitField, PasswordField, BooleanField, ValidationError
 from wtforms.validators import DataRequired, EqualTo
@@ -6,6 +6,7 @@ from flask_sqlalchemy import SQLAlchemy
 from flask_migrate import Migrate
 from datetime import datetime
 from werkzeug.security import generate_password_hash, check_password_hash
+from wtforms.widgets import TextArea
 
 
 # created the flask app instance. this helps find all the files and directories. this also helps to run the app or the flask project 
@@ -26,6 +27,112 @@ db = SQLAlchemy(app)
 # so we have create the model and then we have created the database and then we have created the table in the database using the createall function and 
 # then we have created the user form and now we will craete the route to that form. 
 migrate = Migrate(app, db) 
+
+
+
+# create a blog post model 
+class Posts(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    title = db.Column(db.String(255))
+    content = db.Column(db.Text)
+    author = db.Column(db.String(255))
+    date_posted = db.Column(db.DateTime, default=datetime.utcnow)
+    slug = db.Column(db.String(255))
+
+# route to the delere the post 
+@app.route('/posts/delete/<int:id>',endpoint='delete_post')
+def delete(id):
+    post_to_delete = Posts.query.get_or_404(id)
+    try:
+        db.session.delete(post_to_delete)
+        db.session.commit()
+        # Return a message 
+        flash('Post was deleted')
+
+        # grab all the posts from the database
+        posts = Posts.query.order_by(Posts.date_posted).all()
+        return render_template('posts.html', posts=posts)
+    except:
+        # Return an error message
+        flash('There was an issue deleting that post')
+        posts = Posts.query.order_by(Posts.date_posted).all()
+        return render_template('posts.html', posts=posts)
+
+# Craete a Post form  
+class PostForm(FlaskForm):
+    title = StringField('Title', validators=[DataRequired()], widget=TextArea())
+    content = StringField('Content', validators=[DataRequired()])
+    author = StringField('Author', validators=[DataRequired()])
+    slug = StringField('Slug', validators=[DataRequired()])
+    submit = SubmitField('Submit')
+
+# ceate a blog page 
+@app.route('/posts')
+def posts():
+    # grab all the posts from the database
+    posts = Posts.query.order_by(Posts.date_posted).all()
+    return render_template('posts.html', posts=posts)
+
+@app.route('/posts/<int:id>')
+def post(id):
+    post = Posts.query.get_or_404(id)
+    return render_template('post.html', post=post)
+
+# edit a post route
+@app.route('/posts/edit/<int:id>', methods=['GET', 'POST'])
+def edit_post(id):
+    post = Posts.query.get_or_404(id)
+    form = PostForm()
+    
+    if form.validate_on_submit():
+        post.title = form.title.data
+        post.author = form.author.data
+        post.content = form.content.data
+        post.slug = form.slug.data
+        # update the database
+        db.session.add(post)
+        db.session.commit()
+        flash('Post has been updated')
+        return redirect(url_for('post', id=post.id))
+
+    # this is for when we edit the post which is already in the database therefore when this page loads it will show the data that is already in the database
+    form.title.data = post.title
+    form.author.data = post.author
+    form.content.data = post.content
+    form.slug.data = post.slug
+    return render_template('edit_post.html', form=form)
+
+
+# Add a post Page
+@app.route('/add-post', methods=['GET', 'POST'])
+def add_post():
+    form = PostForm()
+
+    if form.validate_on_submit():
+        post = Posts(
+            title=form.title.data,
+            content=form.content.data,
+            author=form.author.data,
+            slug=form.slug.data
+        )
+        # Clear the form and redirect to that page 
+        form.title.data = ''
+        form.content.data = ''
+        form.author.data = ''
+        form.slug.data = ''
+
+        # Add post data to database
+        db.session.add(post)
+        db.session.commit()
+
+        # Return a message
+        flash("Blog Post Submitted Successfully!")
+
+    # Redirect to the webpage
+    return render_template("add_post.html", form=form)
+
+
+
 
 class Users(db.Model):
     id = db.Column(db.Integer, primary_key=True)
@@ -83,6 +190,7 @@ def add_user():
             user = Users(name=form.name.data, email=form.email.data,favorite_color=form.favorite_color.data, password_hash=hashed_pw)
             db.session.add(user)
             db.session.commit()
+
         name = form.name.data
         # after adding the data we need to clear the form.
         form.name.data = ''
@@ -90,7 +198,9 @@ def add_user():
         form.favorite_color.data = ''
         form.password_hash.data = ''
         # flash("User Added Successfully!"
-        flash("User Added Successfully")
+
+
+        flash("User Added Successfully!")
     our_users = Users.query.order_by(Users.date_added) 
     return render_template('add_user.html', form=form, name=name, our_users=our_users)
 
