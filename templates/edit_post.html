@@ -35,6 +35,10 @@
   {{ form.submit(class="btn btn-primary") }}
   <br/> 
 </form>
+
+{{ckeditor.load()}}
+{{ckeditor.config(name='content', height=400)}}
+
 <br/>
     <a href = " {{url_for('posts')}}" class = "btn btn-outline-secondary btn-sm"> Go Back to Posts</a>
 </div>

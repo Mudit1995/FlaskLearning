@@ -23,7 +23,7 @@
     By : {{ post.poster.name }} <br/>
     {{ post.date_posted }} <br/>
     {{ post.slug}} <br/>
-    {{ post.content }} <br/>
+    {{ post.content | safe }} <br/>
     <hr> <br/>
     <a href = " {{url_for('post', id = post.id )}}" class = "btn btn-outline-secondary btn-sm"> View whole Posts</a>
     {% if post.poster_id == current_user.id %}

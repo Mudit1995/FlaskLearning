@@ -2,6 +2,7 @@ from flask_wtf import FlaskForm
 from wtforms import StringField, SubmitField, PasswordField, BooleanField, ValidationError
 from wtforms.validators import DataRequired, EqualTo
 from wtforms.widgets import TextArea
+from flask_ckeditor import CKEditor, CKEditorField
 
 # create a log in Form
 class LoginForm(FlaskForm):
@@ -14,8 +15,9 @@ class LoginForm(FlaskForm):
     # Craete a Post form  
 class PostForm(FlaskForm):
     title = StringField('Title', validators=[DataRequired()], widget=TextArea())
-    content = StringField('Content', validators=[DataRequired()])
-    author = StringField('Author')
+    # content = StringField('Content', validators=[DataRequired()])
+    content = CKEditorField('Content', validators=[DataRequired()])
+    # author = StringField('Author')
     slug = StringField('Slug', validators=[DataRequired()])
     submit = SubmitField('Submit')
 

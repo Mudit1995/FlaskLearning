@@ -9,11 +9,12 @@ from werkzeug.security import generate_password_hash, check_password_hash
 from wtforms.widgets import TextArea
 from flask_login import UserMixin, login_user, LoginManager, login_required, logout_user, current_user
 from webforms import LoginForm, PostForm, UserForm, PasswordForm, SearchForm
-
+from flask_ckeditor import CKEditor, CKEditorField
 
 # created the flask app instance. this helps find all the files and directories. this also helps to run the app or the flask project 
 
 app = Flask(__name__)
+ckeditor = CKEditor(app)
 
 # add database 
  # this is the URL of the database in future we can change it if we requre it as well.
@@ -63,13 +64,7 @@ def search():
         return render_template('search.html', form=form, searched = post.searched, posts = posts)
     else:
         return render_template('search.html', form=form, searched = post.searched)
-    # form = PostForm()
-    # if form.validate_on_submit():
-    #     post = Posts(title=form.title.data, content=form.content.data, author=form.author.data, slug=form.slug.data)
-    #     db.session.add(post)
-    #     db.session.commit()
-    #     flash("Blog Post Submitted Successfully")
-    # return render_template('search.html', form=form)
+
  
 
 # create a log in page 
