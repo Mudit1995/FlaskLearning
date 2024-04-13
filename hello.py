@@ -8,7 +8,7 @@ from datetime import datetime
 from werkzeug.security import generate_password_hash, check_password_hash
 from wtforms.widgets import TextArea
 from flask_login import UserMixin, login_user, LoginManager, login_required, logout_user, current_user
-from webforms import LoginForm, PostForm, UserForm, PasswordForm
+from webforms import LoginForm, PostForm, UserForm, PasswordForm, SearchForm
 
 
 # created the flask app instance. this helps find all the files and directories. this also helps to run the app or the flask project 
@@ -40,7 +40,37 @@ login_manager.login_view = 'login'
 def load_user(user_id):
     return Users.query.get(int(user_id))
 
+# Pass stuff to base.html because in the navbar.html we dont have the form but we are extending it in the base html therfore we are passing it to the base html
+@app.context_processor
+def base():
+    form = SearchForm()
+    return dict(form=form)
 
+
+# create the functino and route for the search page
+@app.route('/search', methods=['POST'])
+def search():
+    form = SearchForm()
+    post = Posts.query
+    if form.validate_on_submit():
+        # Get the data from the submitted form
+        post.searched = form.searched.data
+        # searched because oin the nav bar file we have given the name as searched
+        # query the database
+        posts = post.filter(Posts.content.like('%' + post.searched + '%'))
+        posts = posts.order_by(Posts.title).all()
+
+        return render_template('search.html', form=form, searched = post.searched, posts = posts)
+    else:
+        return render_template('search.html', form=form, searched = post.searched)
+    # form = PostForm()
+    # if form.validate_on_submit():
+    #     post = Posts(title=form.title.data, content=form.content.data, author=form.author.data, slug=form.slug.data)
+    #     db.session.add(post)
+    #     db.session.commit()
+    #     flash("Blog Post Submitted Successfully")
+    # return render_template('search.html', form=form)
+ 
 
 # create a log in page 
 @app.route('/login', methods=['GET', 'POST'])
