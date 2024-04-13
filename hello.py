@@ -47,9 +47,21 @@ def base():
     form = SearchForm()
     return dict(form=form)
 
+#  creating an admin page 
+@app.route('/admin')
+@login_required
+def admin():
+    id = current_user.id
+    if id == 1:
+        return render_template("admin.html")
+    else:
+        flash("You must be an admin to access admin page")
+        return redirect(url_for('dashboard'))
+
+
 
 # create the functino and route for the search page
-@app.route('/search', methods=['POST'])
+@app.route('/search', methods=['GET', 'POST'])
 def search():
     form = SearchForm()
     post = Posts.query
@@ -63,7 +75,7 @@ def search():
 
         return render_template('search.html', form=form, searched = post.searched, posts = posts)
     else:
-        return render_template('search.html', form=form, searched = post.searched)
+        return render_template('search.html')
 
  
 

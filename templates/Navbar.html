@@ -42,6 +42,12 @@
           </li>
           
           {% if current_user.is_authenticated %}
+            {% if current_user.id == 1 %}
+              <li class="nav-item">
+                <!-- use of the link in flask we use URL for tag 1. the first argument is the name od the route that we define in the hello.py and the second argument is the name of the profile that is the argument of what user function is taking -->
+                <a class="nav-link" href="{{url_for('admin') }}">Admin</a>
+              </li>
+            {% endif %}
           <li class="nav-item">
             <!-- use of the link in flask we use URL for tag 1. the first argument is the name od the route that we define in the hello.py and the second argument is the name of the profile that is the argument of what user function is taking -->
             <a class="nav-link" href="{{url_for('dashboard') }}">dashboard </a>
